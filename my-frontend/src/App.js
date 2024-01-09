@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Alert, Stack } from '@mui/material';
+import { Alert, Stack, Grid } from '@mui/material';
 import Navbar from './components/Navbar';
 import TireCard from './components/TireCard';
 import AddTirePopup from './components/AddTirePopup';
@@ -8,11 +8,16 @@ import TireEditPopup from './components/TireEditPopup';
 import TireViewPopup from './components/TireViewPopup';
 import SearchPopup from './components/SearchPopup';
 import SearchResultsPopup from './components/SearchResultsPopup';
-import Grid from '@mui/material/Grid';
-
+import UserAccessPopup from './components/UserAccessPopup';
+//const BACKEND_URL = 'https://hw-backend.onrender.com/api/tires';
 const BACKEND_URL = 'http://localhost:4000/api/tires';
+const USER_URL = 'http://localhost:4000/api/users';
 
 function App() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [showUserAccessPopup, setShowUserAccessPopup] = useState(false);
+
     const [tires, setTires] = useState([]);
     const [selectedTire, setSelectedTire] = useState(null);
     const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
@@ -21,12 +26,21 @@ function App() {
     const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
     const [isResultsPopupOpen, setIsResultsPopupOpen] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
-    const [alert, setAlert] = useState({ show: false, severity: '', message: '',duration: 4000 });
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [alert, setAlert] = useState({ show: false, severity: '', message: '', duration: 4000 });
 
+    // useEffect(() => {
+    //     fetchTires();
+    // }, []);
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (token) {
+            setIsLoggedIn(true);
+            setIsAdmin(role === 'employee' || role === 'manager');
+        }
         fetchTires();
     }, []);
+    
 
     const fetchTires = async () => {
         try {
@@ -37,6 +51,74 @@ function App() {
             setAlert({ show: true, severity: 'error', message: 'Error fetching tires: ' + error.message });
         }
     };
+
+    // const handleLogin = async (username, password) => {
+    //     try {
+    //         const response = await axios.post(`${USER_URL}/login`, { username, password });
+    //         setIsLoggedIn(true);
+    //         console.log('Login response:', response.data.role);
+    //         setIsAdmin(response.data.role === 'employee' || response.data.role === 'manager');
+    //         setAlert({ show: true, severity: 'success', message: 'Login successful!' });
+    //         setShowUserAccessPopup(false);
+    //     } catch (error) {
+    //         console.error('Login error:', error);
+    //         setAlert({ show: true, severity: 'error', message: 'Login failed: ' + error.response.data });
+    //     }
+    // };
+    const handleLogin = async (username, password) => {
+        try {
+            const response = await axios.post(`${USER_URL}/login`, { username, password });
+            setIsLoggedIn(true);
+            setIsAdmin(response.data.role === 'employee' || response.data.role === 'manager');
+            localStorage.setItem('token', response.data.token); // Store the token
+            localStorage.setItem('role', response.data.role); // Optionally store the role
+            setAlert({ show: true, severity: 'success', message: 'Login successful!' });
+            setShowUserAccessPopup(false);
+        } catch (error) {
+            console.error('Login error:', error);
+            setAlert({ show: true, severity: 'error', message: 'Login failed: ' + error.response.data });
+        }
+    };
+    
+
+    const handleRegister = async (username, password, secretCode) => {
+        try {
+            await axios.post(`${USER_URL}/add`, { username, password, secretCode });
+            setAlert({ show: true, severity: 'success', message: 'Registration successful!' });
+            setShowUserAccessPopup(false);
+        } catch (error) {
+            console.error('Registration error:', error);
+            setAlert({ show: true, severity: 'error', message: 'Registration failed: ' + error.response.data });
+        }
+    };
+
+    // const handleLogout = () => {
+    //     setIsLoggedIn(false);
+    //     setIsAdmin(false);
+    // };
+
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        localStorage.removeItem('token'); // Remove the token
+        localStorage.removeItem('role'); // Remove the role
+        setAlert({ 
+            show: true, 
+            severity: 'success', 
+            message: 'Logged out successfully!' 
+        });
+    
+    };
+    
+
+    const handleLoginLogoutIconClick = () => {
+        if (isLoggedIn) {
+            handleLogout();
+        } else {
+            setShowUserAccessPopup(true);
+        }
+    };
+
 
     const handleAddTire = async (tireData) => {
         try {
@@ -53,6 +135,19 @@ function App() {
         setSelectedTire(tire);
         setIsEditPopupOpen(true);
     };
+
+    const handleMarkAsNotSold = async (tireId) => {
+        try {
+            await axios.put(`${BACKEND_URL}/${tireId}/status`, { status: 'not sold' });
+            setTires(tires.map(tire => tire._id === tireId ? { ...tire, status: 'not sold' } : tire));
+            setAlert({ show: true, severity: 'success', message: 'Tire marked as not sold successfully!' });
+        } catch (error) {
+            console.error('Error marking tire as not sold:', error);
+            setAlert({ show: true, severity: 'error', message: 'Error marking tire as not sold: ' + error.message });
+        }
+    };
+    
+    
 
     const handleSaveTire = async (editedTireData) => {
         try {
@@ -108,13 +203,21 @@ function App() {
       setIsResultsPopupOpen(false);
   };
 
-  const handleAdminAccess = (access) => {
-    setIsAdmin(access);
-};
+  
+const handleMarkAsSold = async (tireId) => {
+    try {
+      await axios.put(`${BACKEND_URL}/${tireId}/status`, { status: 'sold' });
+      fetchTires();
+      setAlert({ show: true, severity: 'success', message: 'Tire marked as sold successfully!' });
+    } catch (error) {
+      console.error('Error marking tire as sold:', error);
+      setAlert({ show: true, severity: 'error', message: 'Error marking tire as sold: ' + error.message });
+    }
+  };
     return (
         <div>
             {alert.show && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20, marginBottom: 10 }}>
                     <Stack sx={{ width: 'auto' }} spacing={2}>
                         <Alert variant="outlined" severity={alert.severity}>
                             {alert.message}
@@ -125,8 +228,16 @@ function App() {
             <Navbar
                 onAddTire={() => setIsAddPopupOpen(true)}
                 onSearchTire={() => setIsSearchPopupOpen(true)}
-                onAdminAccess={handleAdminAccess}
+                onAdminAccess={setIsAdmin}
                 isAdmin={isAdmin}
+                isLoggedIn={isLoggedIn}
+                onLoginLogout={handleLoginLogoutIconClick}
+            />
+            <UserAccessPopup
+                open={showUserAccessPopup}
+                onClose={() => setShowUserAccessPopup(false)}
+                onLogin={handleLogin}
+                onRegister={handleRegister}
             />
             <AddTirePopup
                 open={isAddPopupOpen}
@@ -157,6 +268,8 @@ function App() {
                 onEdit={handleEditTire}
                 onView={handleViewTire}
                 onDelete={handleDeleteTire}
+                onMarkAsSold={handleMarkAsSold}
+                onMarkAsNotSold={handleMarkAsNotSold}
                 isAdmin={isAdmin}
             />
             <Grid container spacing={2} style={{ padding: 20 }}>
@@ -167,6 +280,8 @@ function App() {
                             onEdit={handleEditTire}
                             onView={handleViewTire}
                             onDelete={handleDeleteTire}
+                            onMarkAsSold={handleMarkAsSold}
+                            onMarkAsNotSold={handleMarkAsNotSold}
                             isAdmin={isAdmin}
                         />
                     </Grid>

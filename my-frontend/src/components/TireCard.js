@@ -1,18 +1,47 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, CardActions, CardActionArea } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'; 
+import UndoIcon from '@mui/icons-material/Undo'; 
 
-function TireCard({ tire, onView, onEdit, onDelete, isAdmin }) {
+function TireCard({ tire, onView, onEdit, onDelete,onMarkAsSold, onMarkAsNotSold, isAdmin }) {
+  const isSold = tire.status === 'sold';
+  const cardStyle = isSold ? { 
+    maxWidth: 345, 
+    position: 'relative', 
+    backgroundColor: '#e0e0e0', // Graying out the card
+    color: '#a0a0a0' // Dimming the text color
+  } : { 
+    maxWidth: 345, 
+    position: 'relative' 
+  };
   const handleDelete = () => {
     if (window.confirm(`Are you sure you want to delete the tire "${tire.brand} - ${tire.size}"?`)) {
       onDelete(tire._id);
     }
   };
 
+  
+
   const imageUrl = tire.imageUrls && tire.imageUrls.length > 0 ? tire.imageUrls[0] : '/default-image.jpg';
 
   return (
-    <Card sx={{ maxWidth: 345 }}>
+    <Card sx={cardStyle}>
+      {isSold && (
+        <div style={{ 
+          position: 'absolute', 
+          top: 0, 
+          right: 0, 
+          color: 'red', 
+          fontSize: '20px', 
+          fontWeight: 'bold',
+          backgroundColor: 'white', // Optional: add a background to make the label stand out
+          padding: '2px 5px',
+          zIndex: 2 // Ensure it's above other elements
+        }}>
+          Sold
+        </div>
+      )}
       <CardActionArea onClick={() => onView(tire)}>
         <CardMedia
           component="img"
@@ -41,15 +70,36 @@ function TireCard({ tire, onView, onEdit, onDelete, isAdmin }) {
           View
         </Button>
         {/* The Edit and Delete buttons are only visible if isAdmin is true */}
-        {isAdmin && (
-          <>
-            <Button size="small" color="primary" onClick={() => onEdit(tire)}>
-              Edit
+        {isSold ? (
+          isAdmin && (
+            <Button 
+              size="small" 
+              color="secondary" 
+              onClick={() => onMarkAsNotSold(tire._id)}
+              startIcon={<UndoIcon />}
+            >
+              Not Sold
             </Button>
-            <Button size="small" color="secondary" onClick={handleDelete}>
-              <DeleteIcon /> Delete
-            </Button>
-          </>
+          )
+        ) : (
+          isAdmin && (
+            <>
+              <Button size="small" color="primary" onClick={() => onEdit(tire)}>
+                Edit
+              </Button>
+              <Button size="small" color="secondary" onClick={handleDelete}>
+                <DeleteIcon /> Delete
+              </Button>
+              <Button 
+                size="small" 
+                color="secondary" 
+                onClick={() => onMarkAsSold(tire._id)}
+                startIcon={<CheckCircleIcon />}
+              >
+                Sold
+              </Button>
+            </>
+          )
         )}
       </CardActions>
     </Card>

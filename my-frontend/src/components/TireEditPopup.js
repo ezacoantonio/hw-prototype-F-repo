@@ -66,6 +66,21 @@ function TireEditPopup({ open, onClose, tire, onSave, isAdmin }) {
           </Select>
         </FormControl>
         <FormControl fullWidth margin="dense">
+          <InputLabel id="status-label">Status</InputLabel>
+          <Select 
+            labelId="status-label" 
+            name="status" 
+            value={tireData.status} 
+            label="Status" 
+            onChange={handleChange}
+          >
+            <MenuItem value="posted">Posted</MenuItem>
+            <MenuItem value="not posted">Not Posted</MenuItem>
+            <MenuItem value="sold">Sold</MenuItem>
+            <MenuItem value="not sold">Not Sold</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="dense">
           <InputLabel id="season-label">Season</InputLabel>
           <Select labelId="season-label" name="season" value={tireData.season} label="Season" onChange={handleChange}>
             <MenuItem value="All Season">All Season</MenuItem>

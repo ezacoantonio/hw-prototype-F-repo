@@ -6,7 +6,7 @@ function AddTirePopup({ open, onClose, onAddTire }) {
     brand: '',
     size: '',
     treadCondition: '',
-    status: '', // Added status field
+    status: '',
     imageUrls: [],
     location: '',
     setInfo: '',
@@ -14,28 +14,62 @@ function AddTirePopup({ open, onClose, onAddTire }) {
     price: '',
     notes: ''
   });
+  const [sizeError, setSizeError] = useState(false); // Define sizeError state
 
   const handleChange = (e) => {
-    if (e.target.name === 'imageUrls') {
-      const urls = e.target.value.split('\n').map(url => url.trim());
+    const { name, value } = e.target; // Destructure name and value
+
+    if (name === 'size') {
+      const sizeRegex = /^\d{3}\/\d{2}R\d{2}$/; // Regex for format like 225/60R17
+      setSizeError(!sizeRegex.test(value));
+    }
+    
+    if (name === 'imageUrls') {
+      const urls = value.split('\n').map(url => url.trim());
       setTireData({ ...tireData, imageUrls: urls });
     } else {
-      setTireData({ ...tireData, [e.target.name]: e.target.value });
+      setTireData({ ...tireData, [name]: value });
     }
   };
 
   const handleSubmit = () => {
-    onAddTire(tireData);
-    onClose();
-    setTireData({ brand: '', size: '', treadCondition: '', status: '', imageUrls: [], location: '', setInfo: '', season: '' }); // Reset form
+    if (!sizeError) {
+      onAddTire(tireData);
+      onClose();
+      setTireData({
+        brand: '', 
+        size: '', 
+        treadCondition: '', 
+        status: '', 
+        imageUrls: [], 
+        location: '', 
+        setInfo: '', 
+        season: '', 
+        price: '', 
+        notes: '' 
+      });
+    } else {
+      alert('Please correct the tire size format.');
+    }
   };
+
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Add New Tire</DialogTitle>
       <DialogContent>
         <TextField name="brand" label="Brand" fullWidth margin="dense" variant="standard" value={tireData.brand} onChange={handleChange} />
-        <TextField name="size" label="Size" fullWidth margin="dense" variant="standard" value={tireData.size} onChange={handleChange} />
+        <TextField
+          name="size"
+          label="Size"
+          fullWidth
+          margin="dense"
+          variant="standard"
+          value={tireData.size}
+          onChange={handleChange}
+          error={sizeError}
+          helperText={sizeError ? "Invalid format. Correct format: 225/60R17" : ""}
+        />
         <FormControl fullWidth margin="dense">
           <InputLabel id="tread-condition-label">Tread Condition</InputLabel>
           <Select labelId="tread-condition-label" name="treadCondition" value={tireData.treadCondition} label="Tread Condition" onChange={handleChange}>

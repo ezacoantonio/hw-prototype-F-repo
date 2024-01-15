@@ -1,31 +1,27 @@
-import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
-import config from '../config'; // Adjust the path as necessary
+import React from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip } from '@mui/material';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
-function UpperManagementLoginPopup({ open, onClose, onLoginSuccess }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = () => {
-    // Use credentials from config file
-    if (username === config.adminUsername && password === config.adminPassword) {
-      onLoginSuccess();
-    } else {
-      alert('Invalid credentials');
-    }
-    onClose();
-  };
-
+function UpperManagementLoginPopup({ open, onClose, onOpenTireSalesAnalyticsPopup }) {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Upper Management Login</DialogTitle>
+      <DialogTitle>Upper Management Portal</DialogTitle>
       <DialogContent>
-        <TextField label="Username" value={username} onChange={e => setUsername(e.target.value)} fullWidth />
-        <TextField label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} fullWidth />
+        {/* ... Other buttons and content ... */}
+        
+        {/* IconButton to open Tire Sales Analytics Popup */}
+        <Tooltip title="Tire Sales Analytics">
+          <IconButton 
+            onClick={onOpenTireSalesAnalyticsPopup}
+            color="primary"
+            
+          >
+            <AttachMoneyIcon />
+          </IconButton>
+        </Tooltip>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleLogin}>Login</Button>
+        {/* <Button onClick={onClose}>Close</Button> */}
       </DialogActions>
     </Dialog>
   );

@@ -7,10 +7,14 @@ function UserAccessPopup({ open, onClose, onLogin, onRegister }) {
     const [password, setPassword] = useState('');
     const [secretCode, setSecretCode] = useState(''); // For registration
 
-    const handleLogin = () => {
-        onLogin(username, password);
+    const handleLogin = async () => {
+        const success = await onLogin(username, password);
+        if (success) {
+            console.log(username)
+            localStorage.setItem('username', username); // Store username in local storage
+        }
     };
-
+    
     const handleRegister = () => {
         onRegister(username, password, secretCode);
     };

@@ -32,7 +32,7 @@ const CategoryCreationForm = ({ onSuccess }) => {
         onChange={(e) => setCategoryName(e.target.value)}
         fullWidth
       />
-      <Button onClick={handleCreateCategory}>Create Category</Button>
+      <Button onClick={handleCreateCategory} sx={{ color: "orange" }}>Create Category</Button>
     </div>
   );
 };
@@ -51,7 +51,8 @@ const CategoryCreationFormDialog = ({ onSuccess }) => {
   return (
     <div>
       <IconButton onClick={handleClickOpen}>
-        <FolderIcon /> {/* Using FolderIcon */}
+        <FolderIcon
+        sx={{ color: "#FD6A02" }} /> {/* Using FolderIcon */}
       </IconButton>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Create a New Category</DialogTitle>
@@ -59,7 +60,7 @@ const CategoryCreationFormDialog = ({ onSuccess }) => {
           <CategoryCreationForm onSuccess={onSuccess} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Close</Button>
+          <Button onClick={handleClose} sx={{ color: "red" }}>Close</Button>
         </DialogActions>
       </Dialog>
     </div>

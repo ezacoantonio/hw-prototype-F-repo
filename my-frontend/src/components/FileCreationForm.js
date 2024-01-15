@@ -86,7 +86,7 @@ const FileCreationForm = ({ categories, onSuccess }) => {
         onChange={handleLinkChange}
         fullWidth
       />
-      <Button onClick={handleCreateFile}>Create File</Button>
+      <Button onClick={handleCreateFile} sx={{ color: "orange" }}>Create File</Button>
       {alertVisible && (
         <Alert severity="success">File created successfully!</Alert>
       )}
@@ -108,15 +108,15 @@ const FileCreationFormDialog = ({ categories }) => {
   return (
     <div>
       <IconButton onClick={handleClickOpen}>
-        <InsertDriveFileIcon />
+        <InsertDriveFileIcon sx={{ color: "#FFBF00" }}/>
       </IconButton>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={open} onClose={handleClose} >
         <DialogTitle>Create a New File</DialogTitle>
         <DialogContent>
           <FileCreationForm categories={categories} onSuccess={handleClose} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Close</Button>
+          <Button onClick={handleClose}sx={{ color: "red" }}>Close</Button>
         </DialogActions>
       </Dialog>
     </div>

@@ -28,6 +28,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
 import CategoryCreationFormDialog from "./CategoryCreationForm";
 import FileCreationFormDialog from "./FileCreationForm";
+import DeleteIcon from "@mui/icons-material/Delete";
+import HighlightOffTwoToneIcon from "@mui/icons-material/HighlightOffTwoTone";
+import ClearIcon from "@mui/icons-material/Clear";
+
 
 // Define the API endpoint URLs as variables
 // const CAR_SEARCH_ENDPOINT = "http://localhost:4000/api/search";
@@ -38,9 +42,8 @@ const API_BASE_URL = "http://localhost:4000/api";
 const CAR_SEARCH_ENDPOINT = `${API_BASE_URL}/search`;
 const CLASSIC_CARS_ENDPOINT = `${API_BASE_URL}/classic-cars`;
 
-
 const RecipeReviewCard = ({ car, onRefresh }) => {
-//   console.log("Car data car id:", car);
+  //   console.log("Car data car id:", car);
   const [openPopup, setOpenPopup] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
@@ -81,6 +84,53 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
     }
     setExpanded(!expanded);
   };
+  const handleDeleteCar = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this car?"
+    );
+    if (confirmDelete) {
+      try {
+        await axios.delete(`${CLASSIC_CARS_ENDPOINT}/${car.car._id}`);
+        alert("Car deleted successfully!");
+        onRefresh(); // Refresh the car list
+      } catch (error) {
+        console.error("Error deleting car:", error);
+        alert("Failed to delete the car.");
+      }
+    }
+  };
+  const handleDeleteCategory = async (categoryId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this category?"
+    );
+    if (confirmDelete) {
+      try {
+        await axios.delete(`${API_BASE_URL}/categories/${categoryId}`);
+        alert("Category deleted successfully!");
+        // You may want to refresh the categories after deletion
+      } catch (error) {
+        console.error("Error deleting category:", error);
+        alert("Failed to delete the category.");
+      }
+    }
+  };
+  const handleDeleteFile = async (fileId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this file?"
+    );
+
+    if (confirmDelete) {
+      try {
+        // Make an HTTP DELETE request to delete the file using the fileId
+        await axios.delete(`${API_BASE_URL}/files/${fileId}`);
+        alert("File deleted successfully!");
+        // You can also refresh the file list if needed
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        alert("Failed to delete the file.");
+      }
+    }
+  };
 
   const categories = Array.isArray(car.categories) ? car.categories : [];
   const files = Array.isArray(car.files) ? car.files : [];
@@ -88,11 +138,14 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
   const isCarDataAvailable = car && car.car;
 
   return (
-    <Card sx={{ 
-        maxWidth: 345, 
-        margin: 1,
-        boxShadow: 5 // Optional: Adding some shadow for better UI
-      }}>
+    <Card
+      sx={{
+        maxWidth: 400,
+        marginBottom: 3,
+        boxShadow: 5,
+        marginLeft: 2 // Optional: Adding some shadow for better UI
+      }}
+    >
       {isCarDataAvailable && (
         <CardContent sx={{ paddingBottom: "16px" }}>
           <Typography variant="h5" component="div" sx={{ fontWeight: "bold" }}>
@@ -136,6 +189,13 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
         >
           <ExpandMoreIcon />
         </IconButton>
+        <IconButton
+          aria-label="delete car"
+          onClick={handleDeleteCar}
+          sx={{ color: "red" }}
+        >
+          <DeleteIcon />
+        </IconButton>
       </CardActions>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
@@ -147,9 +207,18 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
                     paragraph
                     variant="subtitle1"
                     component="div"
+                    marginBottom={1}
                     sx={{ fontWeight: "bold" }}
                   >
                     {category.name}:
+                    <HighlightOffTwoToneIcon
+                      onClick={() => handleDeleteCategory(category._id)}
+                      style={{
+                        color: "rgba(255, 0, 0, 0.5)",
+                        cursor: "pointer",
+                        fontSize: "20px",
+                      }}
+                    />
                   </Typography>
                   {files
                     .filter((file) => file.category === category._id)
@@ -173,6 +242,12 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
                             />
                           </IconButton>
                         ))}
+                        <IconButton
+                          onClick={() => handleDeleteFile(file._id)}
+                          style={{ color: "red", cursor: "pointer" }}
+                        >
+                          <ClearIcon />
+                        </IconButton>
                       </div>
                     ))}
                 </div>
@@ -200,7 +275,8 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
               categories={categories}
               onSuccess={() => {
                 handleCloseFileDialog();
-                onRefresh(); // Use onRefresh (fetchCarData) after file creation
+                onRefresh();
+                // Use onRefresh (fetchCarData) after file creation
               }}
             />
           </div>
@@ -261,10 +337,10 @@ const ClassicCarInventory = ({ open, onClose }) => {
       results = results.concat(carResponse.data.cars);
 
       // Fetching file data
-    //   const fileResponse = await axios.get(
-    //     `${FILE_SEARCH_ENDPOINT}?term=${searchTerm}`
-    //   );
-    //   results = results.concat(fileResponse.data.files);
+      //   const fileResponse = await axios.get(
+      //     `${FILE_SEARCH_ENDPOINT}?term=${searchTerm}`
+      //   );
+      //   results = results.concat(fileResponse.data.files);
 
       setSearchResults(results);
     } catch (error) {
@@ -308,7 +384,7 @@ const ClassicCarInventory = ({ open, onClose }) => {
     };
 
     axios
-    .post(CLASSIC_CARS_ENDPOINT, newCarData)
+      .post(CLASSIC_CARS_ENDPOINT, newCarData)
       .then((response) => {
         setShowAlert(true);
         setTimeout(() => {
@@ -360,6 +436,7 @@ const ClassicCarInventory = ({ open, onClose }) => {
             color="primary"
             aria-label="add"
             onClick={toggleCreateForm}
+            sx={{ color: "#FD6A02" }}
           >
             <AddIcon />
           </IconButton>
@@ -367,6 +444,7 @@ const ClassicCarInventory = ({ open, onClose }) => {
             color="primary"
             aria-label="search"
             onClick={toggleSearchForm}
+            sx={{ color: "#FD6A02" }}
           >
             <SearchIcon />
           </IconButton>
@@ -398,6 +476,7 @@ const ClassicCarInventory = ({ open, onClose }) => {
                 onChange={handleFormChange}
                 required
                 fullWidth
+                style={{ marginTop: "10px" }}
               />
               <TextField
                 label="Image URL"
@@ -406,12 +485,15 @@ const ClassicCarInventory = ({ open, onClose }) => {
                 onChange={handleFormChange}
                 required
                 fullWidth
+                style={{ marginTop: "10px" }}
               />
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 fullWidth
+                style={{ marginTop: "10px" }}
+                sx={{ color: "white", backgroundColor: "#FD6A02" }}
               >
                 Create Listing
               </Button>
@@ -431,7 +513,7 @@ const ClassicCarInventory = ({ open, onClose }) => {
           >
             <div>
               <TextField
-                label="Search Term"
+                label="Search Car Inventory"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 fullWidth
@@ -446,10 +528,13 @@ const ClassicCarInventory = ({ open, onClose }) => {
                         checked={searchCars}
                         onChange={() => setSearchCars(!searchCars)}
                         name="searchCars"
+                        iconStyle={{ color: "black" }} // Color for the unchecked state
+                        checkedIconStyle={{ color: "#FD6A02" }} // Color for the checked state (orange)
                       />
                     }
                     label="Cars"
                   />
+
                   {/* <FormControlLabel
                     control={
                       <Checkbox
@@ -467,6 +552,7 @@ const ClassicCarInventory = ({ open, onClose }) => {
                 variant="contained"
                 color="primary"
                 onClick={handleSearch}
+                sx={{ color: "white", backgroundColor: "#FD6A02" }}
               >
                 Search
               </Button>

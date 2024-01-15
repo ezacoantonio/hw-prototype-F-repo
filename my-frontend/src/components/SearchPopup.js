@@ -11,6 +11,7 @@ import InputLabel from '@mui/material/InputLabel';
 import TireSizeAutocomplete from './TireSizeAutocomplete'; 
 import TireBrandAutocomplete from './TireBrandAutocomplete';
 
+
 function SearchPopup({ open, onClose, onSearch }) {
   const [searchParams, setSearchParams] = useState({
       size: '',

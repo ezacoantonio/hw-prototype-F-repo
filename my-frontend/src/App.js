@@ -14,11 +14,16 @@ import ClassicCarInventory from "./components/ClassicCarInventory";
 import TireSaleAnalytics from "./components/TireSaleAnalytics";
 import UpperManagementLoginPopup from "./components/UpperManagementLoginPopup";
 import TireSalesAnalyticsDetailsPopup from "./components/TireSalesAnalyticsDetailsPopup";
-
+import CustomerOrderDialog from "./components/CustomerOrderDialog";
 import { jwtDecode } from "jwt-decode";
+import OrderListPopup from "./components/OrderListPopup";
 
 //const BACKEND_URL = 'https://hw-backend.onrender.com/api/tires';
 // const USER_URL = "https://hw-backend.onrender.com/api/users";
+//const BACKEND_ORDER_URL = "https://hw-backend.onrender.com/api/orders";
+//const BACKEND_ORDER_URL_EMAIL = "https://hw-backend.onrender.com/api/orders/";
+const BACKEND_ORDER_URL_EMAIL = "http://localhost:4000/api/orders/";
+const BACKEND_ORDER_URL = "http://localhost:4000/api/orders/list-all";
 const BACKEND_URL = "http://localhost:4000/api/tires";
 const USER_URL = "http://localhost:4000/api/users";
 
@@ -45,6 +50,9 @@ function App() {
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const [isResultsPopupOpen, setIsResultsPopupOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+  const [isOrderListPopupOpen, setIsOrderListPopupOpen] = useState(false);
   const [alert, setAlert] = useState({
     show: false,
     severity: "",
@@ -57,6 +65,8 @@ function App() {
   // New state variables for Management popups
   const [showClassicCarPopup, setShowClassicCarPopup] = useState(false);
   const [showTireSalesPopup, setShowTireSalesPopup] = useState(false);
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [orderingTire, setOrderingTire] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -69,7 +79,66 @@ function App() {
       setIsManager(decodedToken.role === "manager"); // Set isManager true only for 'manager' role
     }
     fetchTires();
+    fetchOrders();
   }, []);
+  const fetchOrders = async () => {
+    // Fetch orders from your API and update state
+    try {
+      const response = await axios.get(BACKEND_ORDER_URL);
+      setOrders(response.data);
+      const pendingCount = response.data.filter(
+        (order) => order.status === "pending"
+      ).length;
+      setPendingOrdersCount(pendingCount);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
+
+  const handleOrderTire = (tire) => {
+    setOrderingTire(tire);
+    setIsOrderDialogOpen(true);
+  };
+
+  const handleOrderSubmit = async (orderDetails, tire) => {
+    const orderData = {
+      tireId: tire._id,
+      customer: {
+        firstName: orderDetails.firstName,
+        lastName: orderDetails.lastName,
+        email: orderDetails.email,
+        phone: orderDetails.phoneNumber,
+      },
+    };
+
+    try {
+      const response = await axios.post(BACKEND_ORDER_URL_EMAIL, orderData, {
+        headers: {
+          "Content-Type": "application/json",
+          username: localStorage.getItem("username"), // Include username header
+        },
+      });
+
+      if (response.status === 201) {
+        setAlert({
+          show: true,
+          severity: "success",
+          message:
+            "Order placed successfully. Check your email for confirmation.",
+        });
+        setIsOrderDialogOpen(false);
+      } else {
+        throw new Error("Failed to place order");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      setAlert({
+        show: true,
+        severity: "error",
+        message: "Failed to place the order. Please try again.",
+      });
+    }
+  };
 
   const fetchTires = async () => {
     try {
@@ -114,9 +183,25 @@ function App() {
     }
   };
 
-  const handleRegister = async (username, password, secretCode) => {
+  const handleRegister = async (
+    username,
+    password,
+    secretCode,
+    firstName,
+    lastName,
+    email,
+    phone
+  ) => {
     try {
-      await axios.post(`${USER_URL}/add`, { username, password, secretCode });
+      await axios.post(`${USER_URL}/add`, {
+        username,
+        password,
+        secretCode,
+        firstName,
+        lastName,
+        email,
+        phone,
+      });
       setAlert({
         show: true,
         severity: "success",
@@ -335,48 +420,6 @@ function App() {
       });
     }
   };
-  //   const handleMarkAsSold = async (tireId) => {
-  //     const userId = localStorage.getItem("userId"); // Fetch the user ID from local storage
-
-  //     try {
-  //       await axios.put(`${BACKEND_URL}/${tireId}/status`, {
-  //         status: "sold",
-  //         userId: userId // Send the user ID to the back-end
-  //       });
-  //       fetchTires();
-  //       setAlert({
-  //         show: true,
-  //         severity: "success",
-  //         message: "Tire marked as sold successfully!",
-  //       });
-  //     } catch (error) {
-  //       console.error("Error marking tire as sold:", error);
-  //       setAlert({
-  //         show: true,
-  //         severity: "error",
-  //         message: "Error marking tire as sold: " + error.message,
-  //       });
-  //     }
-  //   };
-
-  //   const handleMarkAsSold = async (tireId) => {
-  //     try {
-  //       await axios.put(`${BACKEND_URL}/${tireId}/status`, { status: "sold" });
-  //       fetchTires();
-  //       setAlert({
-  //         show: true,
-  //         severity: "success",
-  //         message: "Tire marked as sold successfully!",
-  //       });
-  //     } catch (error) {
-  //       console.error("Error marking tire as sold:", error);
-  //       setAlert({
-  //         show: true,
-  //         severity: "error",
-  //         message: "Error marking tire as sold: " + error.message,
-  //       });
-  //     }
-  //   };
 
   // Function to open Classic Car Inventory Popup
   const openClassicCarInventoryPopup = () => {
@@ -388,10 +431,27 @@ function App() {
     setShowClassicCarInventoryPopup(false);
   };
 
-  //   const openTireSalesAnalyticsPopup = () => {
-  //     console.log("Opening Tire Sales Analytics Popup");
-  //     setShowTireSalesAnalyticsPopup(true);
-  //   };
+  const handleOrdersOpen = () => {
+    if (orders.length === 0) {
+      fetchOrders(); // Fetch orders if not already done
+    }
+    setIsOrderListPopupOpen(true); // Open the popup
+  };
+
+  // const refreshOrders = async () => {
+  //   try {
+  //     const response = await axios.get(BACKEND_ORDER_URL);
+  //     setOrders(response.data);
+  //     // Update other relevant state if needed, like pendingOrdersCount
+  //   } catch (error) {
+  //     console.error("Error refreshing orders:", error);
+  //   }
+  // };
+
+  const handleRefreshSpecificOrder = (newOrders) => {
+    // Make sure newOrders is an array
+    setOrders(Array.isArray(newOrders) ? newOrders : []);
+  };
 
   // Function to close Tire Sales Analytics Popup
   const closeTireSalesAnalyticsPopup = () => {
@@ -455,6 +515,8 @@ function App() {
           onUpperManagementAccess={openUpperManagementPopup}
           onClassicCarOpen={openClassicCarInventoryPopup}
           onTireSalesOpen={handleTireSalesPopupOpen}
+          onOrdersOpen={handleOrdersOpen}
+          pendingOrdersCount={pendingOrdersCount}
         />
         {/* Management Popups */}
         {showClassicCarPopup && (
@@ -540,7 +602,19 @@ function App() {
                   open={showClassicCarInventoryPopup} // Pass open prop here
                   onClose={closeClassicCarInventoryPopup}
                 />
-                
+                <CustomerOrderDialog
+                  open={isOrderDialogOpen}
+                  onClose={() => setIsOrderDialogOpen(false)}
+                  onSubmit={handleOrderSubmit}
+                  tire={orderingTire}
+                />
+                {/* Order List Popup */}
+                <OrderListPopup
+                  open={isOrderListPopupOpen}
+                  onClose={() => setIsOrderListPopupOpen(false)}
+                  orders={orders}
+                  onRefreshOrders={handleRefreshSpecificOrder}
+                />
 
                 <Grid container spacing={2} style={{ padding: 20 }}>
                   {tires.map((tire) => (
@@ -553,6 +627,7 @@ function App() {
                         onMarkAsSold={handleMarkAsSold}
                         onMarkAsNotSold={handleMarkAsNotSold}
                         isAdmin={isAdmin}
+                        onOrder={handleOrderTire} // Pass handleOrderTire as a prop
                       />
                     </Grid>
                   ))}

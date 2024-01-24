@@ -1,7 +1,7 @@
 // controllers/tireControllers.js
-const Tire = require('../model/tire'); // Update the path as needed
-const TireSale = require('../model/TireSale');
-const User = require('../model/User');
+const Tire = require("../model/tire"); // Update the path as needed
+const TireSale = require("../model/TireSale");
+const User = require("../model/User");
 
 exports.getAllTires = async (req, res) => {
   try {
@@ -26,9 +26,11 @@ exports.updateTire = async (req, res) => {
   try {
     const tireId = req.params.id;
     const updatedData = req.body;
-    const updatedTire = await Tire.findByIdAndUpdate(tireId, updatedData, { new: true });
+    const updatedTire = await Tire.findByIdAndUpdate(tireId, updatedData, {
+      new: true,
+    });
     if (!updatedTire) {
-      return res.status(404).send('Tire not found');
+      return res.status(404).send("Tire not found");
     }
     res.status(200).json(updatedTire);
   } catch (error) {
@@ -40,39 +42,36 @@ exports.deleteTire = async (req, res) => {
   try {
     const tireId = req.params.id;
     await Tire.findByIdAndDelete(tireId);
-    res.status(200).send('Tire deleted');
+    res.status(200).send("Tire deleted");
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
 
-
 exports.searchTires = async (req, res) => {
   try {
-      const query = {};
-      if (req.query.size) query.size = req.query.size;
-      if (req.query.brand) query.brand = req.query.brand;
+    const query = {};
+    if (req.query.size) query.size = req.query.size;
+    if (req.query.brand) query.brand = req.query.brand;
 
-      // Sorting logic
-      let sort = {};
-      if (req.query.sortBy) {
-          const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
-          sort[req.query.sortBy] = sortOrder;
+    // Sorting logic
+    let sort = {};
+    if (req.query.sortBy) {
+      const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+      sort[req.query.sortBy] = sortOrder;
 
-          // If sorting by price, add a secondary sort criteria
-          if (req.query.sortBy === 'price') {
-              sort['_id'] = 1; // Replace '_id' with 'createdAt' if you have a timestamp
-          }
+      // If sorting by price, add a secondary sort criteria
+      if (req.query.sortBy === "price") {
+        sort["_id"] = 1; // Replace '_id' with 'createdAt' if you have a timestamp
       }
+    }
 
-      const tires = await Tire.find(query).sort(sort);
-      res.json(tires);
+    const tires = await Tire.find(query).sort(sort);
+    res.json(tires);
   } catch (error) {
-      res.status(500).send(error.message);
+    res.status(500).send(error.message);
   }
 };
-
-
 
 // Other functions you provided earlier
 exports.findTiresBySize = async (req, res) => {
@@ -86,32 +85,36 @@ exports.findTiresBySize = async (req, res) => {
 };
 
 exports.updateTireStatus = async (req, res) => {
-  console.log(req.body); 
+  console.log(req.body);
   try {
     const tireId = req.params.id;
     const { status, username } = req.body; // Change from userId to username
-    
+
     // First update the tire status
-    const updatedTire = await Tire.findByIdAndUpdate(tireId, { status }, { new: true });
+    const updatedTire = await Tire.findByIdAndUpdate(
+      tireId,
+      { status },
+      { new: true }
+    );
     if (!updatedTire) {
-      return res.status(404).send('Tire not found');
+      return res.status(404).send("Tire not found");
     }
 
     // If the status is 'sold', create a new TireSale record
-    if (status === 'sold') {
+    if (status === "sold") {
       // Find the user by username
       const user = await User.findOne({ username: username });
       if (!user) {
-        return res.status(404).send('User not found');
+        return res.status(404).send("User not found");
       }
 
       const newSale = new TireSale({
         tireId: tireId,
         userId: user._id, // Save the user's ObjectId
-        username: user.username, 
+        username: user.username,
         size: updatedTire.size,
         soldPrice: updatedTire.price,
-        soldDate: new Date()
+        soldDate: new Date(),
       });
       await newSale.save();
     }
@@ -122,6 +125,52 @@ exports.updateTireStatus = async (req, res) => {
   }
 };
 
+// exports.updateTireStatus = async (req, res) => {
+//   try {
+//     const tireId = req.params.id;
+//     const { status, username } = req.body;
+
+//     let updateData = { status };
+
+//     // If the status is 'sold', set the soldDate and create a new TireSale record
+//     if (status === "sold") {
+//       updateData.soldDate = new Date(); // Set the sold date
+
+//       const user = await User.findOne({ username: username });
+//       if (!user) {
+//         return res.status(404).send("User not found");
+//       }
+
+//       // Find the tire to get the current price and size
+//       const tire = await Tire.findById(tireId);
+//       if (!tire) {
+//         return res.status(404).send("Tire not found");
+//       }
+
+//       const newSale = new TireSale({
+//         tireId: tireId,
+//         userId: user._id,
+//         username: user.username,
+//         size: tire.size,
+//         soldPrice: tire.price,
+//         soldDate: updateData.soldDate,
+//       });
+//       await newSale.save();
+//     }
+//     console.log(soldPrice);
+//     // Update the tire with the new data
+//     const updatedTire = await Tire.findByIdAndUpdate(tireId, updateData, {
+//       new: true,
+//     });
+//     if (!updatedTire) {
+//       return res.status(404).send("Tire not found");
+//     }
+
+//     res.json(updatedTire);
+//   } catch (error) {
+//     res.status(500).send(error.message);
+//   }
+// };
 
 exports.getTireSizes = async (req, res) => {
   try {
@@ -150,9 +199,11 @@ exports.markTireAsNotSold = async (req, res) => {
     await TireSale.findOneAndDelete({ tireId: tireId });
 
     // Update the tire status back to available (or your preferred status)
-    await Tire.findByIdAndUpdate(tireId, { status: 'available' });
+    await Tire.findByIdAndUpdate(tireId, { status: "available" });
 
-    res.status(200).json({ message: 'Tire marked as not sold and sale record removed.' });
+    res
+      .status(200)
+      .json({ message: "Tire marked as not sold and sale record removed." });
   } catch (error) {
     res.status(500).send(error.message);
   }

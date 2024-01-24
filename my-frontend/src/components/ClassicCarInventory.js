@@ -32,13 +32,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import HighlightOffTwoToneIcon from "@mui/icons-material/HighlightOffTwoTone";
 import ClearIcon from "@mui/icons-material/Clear";
 
-
 // Define the API endpoint URLs as variables
 // const CAR_SEARCH_ENDPOINT = "http://localhost:4000/api/search";
 // const FILE_SEARCH_ENDPOINT = "https://hw-backend.onrender.com/api/search";
-//https://hw-backend.onrender.com/
-const API_BASE_URL = "http://localhost:4000/api";
 // const API_BASE_URL = "https://hw-backend.onrender.com/api";
+const API_BASE_URL = "http://localhost:4000/api";
 const CAR_SEARCH_ENDPOINT = `${API_BASE_URL}/search`;
 const CLASSIC_CARS_ENDPOINT = `${API_BASE_URL}/classic-cars`;
 
@@ -143,7 +141,7 @@ const RecipeReviewCard = ({ car, onRefresh }) => {
         maxWidth: 400,
         marginBottom: 3,
         boxShadow: 5,
-        marginLeft: 2 // Optional: Adding some shadow for better UI
+        marginLeft: 2, // Optional: Adding some shadow for better UI
       }}
     >
       {isCarDataAvailable && (
@@ -528,8 +526,8 @@ const ClassicCarInventory = ({ open, onClose }) => {
                         checked={searchCars}
                         onChange={() => setSearchCars(!searchCars)}
                         name="searchCars"
-                        iconStyle={{ color: "black" }} // Color for the unchecked state
-                        checkedIconStyle={{ color: "#FD6A02" }} // Color for the checked state (orange)
+                        iconstyle={{ color: "black" }} // Color for the unchecked state
+                        checkediconstyle={{ color: "#FD6A02" }} // Color for the checked state (orange)
                       />
                     }
                     label="Cars"

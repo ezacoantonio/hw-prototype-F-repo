@@ -18,6 +18,7 @@ import ListItemIcon from "@mui/material/ListItemIcon"; // New import for ListIte
 import ListItemText from "@mui/material/ListItemText"; // New import for ListItemText
 import CarIcon from "@mui/icons-material/DirectionsCar"; // New import for Car Icon
 import AnalyticsIcon from "@mui/icons-material/Assessment"; // New import for Analytics Icon
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart"; // For orders icon
 
 function Navbar({
   onAddTire,
@@ -26,9 +27,10 @@ function Navbar({
   isAdmin,
   isLoggedIn,
   onLoginLogout,
-//   isManager,
   onClassicCarOpen,
   onTireSalesOpen,
+  onOrdersOpen, // New prop for handling order management
+  pendingOrdersCount, // New prop for the number of pending orders
 }) {
   const [adminPopupOpen, setAdminPopupOpen] = useState(false);
   const [managementAnchorEl, setManagementAnchorEl] = useState(null);
@@ -47,7 +49,6 @@ function Navbar({
   }, []);
 
   const isManager = userRole === "manager";
-
 
   const handleAdminPopupOpen = () => {
     setAdminPopupOpen(true);
@@ -140,53 +141,48 @@ function Navbar({
               <LinkIcon style={{ marginRight: "10px", color: "orange" }} />
               Image Upload
             </MenuItem>
-            {/* <MenuItem onClick={() => handleMenuOptionClick("adminAccess")}>
-              <VpnKeyIcon style={{ marginRight: "10px", color: "orange" }} />
-              Admin Access
-            </MenuItem> */}
-            {/* <MenuItem
-              onClick={() => isManager && handleUpperManagementClick()}
-              disabled={!isManager}
-            >
-              <ManageAccountsTwoToneIcon
+            <MenuItem onClick={onOrdersOpen} disabled={!isAdmin}>
+              <ShoppingCartIcon
                 style={{
                   marginRight: "10px",
-                  color: isManager ? "orange" : "grey",
+                  color: isAdmin ? "orange" : "grey",
                 }}
               />
-              Upper Management
-            </MenuItem> */}
+              Orders
+            </MenuItem>
             <MenuItem onClick={handleManagementMenuOpen}>
-            <ListItemIcon>
-              <ManageAccountsTwoToneIcon style={{ color: "orange" }} />
-            </ListItemIcon>
+              <ListItemIcon>
+                <ManageAccountsTwoToneIcon style={{ color: "orange" }} />
+              </ListItemIcon>
 
               <ListItemText primary="Management" />
             </MenuItem>
           </Menu>
           {/* Management Submenu */}
           {/* Management Submenu */}
-        <Menu
-          anchorEl={managementAnchorEl}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          keepMounted
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          open={isManagementMenuOpen}
-          onClose={handleManagementMenuClose}
-        >
-          <MenuItem onClick={onClassicCarOpen} disabled={!isManager}>
-          <ListItemIcon>
-              <CarIcon style={{ color: isManager ? "orange" : "grey" }} />
-            </ListItemIcon>
-            <ListItemText primary="Classic Car Inventory" />
-          </MenuItem>
-          <MenuItem onClick={onTireSalesOpen} disabled={!isManager}>
-          <ListItemIcon>
-              <AnalyticsIcon style={{ color: isManager ? "orange" : "grey" }} />
-            </ListItemIcon>
-            <ListItemText primary="Tire Sales Analytics" />
-          </MenuItem>
-        </Menu>
+          <Menu
+            anchorEl={managementAnchorEl}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            keepMounted
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            open={isManagementMenuOpen}
+            onClose={handleManagementMenuClose}
+          >
+            <MenuItem onClick={onClassicCarOpen} disabled={!isManager}>
+              <ListItemIcon>
+                <CarIcon style={{ color: isManager ? "orange" : "grey" }} />
+              </ListItemIcon>
+              <ListItemText primary="Classic Car Inventory" />
+            </MenuItem>
+            <MenuItem onClick={onTireSalesOpen} disabled={!isManager}>
+              <ListItemIcon>
+                <AnalyticsIcon
+                  style={{ color: isManager ? "orange" : "grey" }}
+                />
+              </ListItemIcon>
+              <ListItemText primary="Tire Sales Analytics" />
+            </MenuItem>
+          </Menu>
         </div>
         <img
           src={logoUrl}

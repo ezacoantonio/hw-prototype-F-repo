@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import AutocompleteComponent from './Autocomplete'; // Adjust the path as needed
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import AutocompleteComponent from "./Autocomplete"; // Adjust the path as needed
 
-const BACKEND_URL = 'http://localhost:4000/api/tires'; // Use your actual backend URL
+const BACKEND_URL = "http://localhost:4000/api/tires"; // Use your actual backend URL
 //const BACKEND_URL = 'https://hw-backend.onrender.com/api/tires'; // Use your actual backend URL
-
 
 const TireBrandAutocomplete = ({ onBrandSelect }) => {
   const [tireBrands, setTireBrands] = useState([]);
-  const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState(null);
 
   useEffect(() => {
     const fetchTireBrands = async () => {
@@ -16,7 +15,7 @@ const TireBrandAutocomplete = ({ onBrandSelect }) => {
         const response = await axios.get(`${BACKEND_URL}/brands`);
         setTireBrands(response.data);
       } catch (error) {
-        console.error('Error fetching tire brands:', error);
+        console.error("Error fetching tire brands:", error);
       }
     };
 

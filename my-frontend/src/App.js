@@ -67,6 +67,8 @@ function App() {
   const [showTireSalesPopup, setShowTireSalesPopup] = useState(false);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [orderingTire, setOrderingTire] = useState(null);
+  const [rSizeSearch, setRSizeSearch] = useState("");
+  const [originalTires, setOriginalTires] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -420,6 +422,27 @@ function App() {
       });
     }
   };
+  const fetchTiresByRSize = async () => {
+    if (rSizeSearch.trim() === "") {
+      setTires(originalTires); // Reset to original tires if search is cleared
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${BACKEND_URL}/search-by-rsize`, {
+        params: { rSize: rSizeSearch },
+      });
+      if (!originalTires.length) setOriginalTires(tires); // Store original tires if not already stored
+      setTires(response.data); // Update tires based on search
+    } catch (error) {
+      console.error("Error fetching tires by R size:", error);
+      setAlert({
+        show: true,
+        severity: "error",
+        message: "Error fetching tires: " + error.message,
+      });
+    }
+  };
 
   // Function to open Classic Car Inventory Popup
   const openClassicCarInventoryPopup = () => {
@@ -518,6 +541,15 @@ function App() {
           onOrdersOpen={handleOrdersOpen}
           pendingOrdersCount={pendingOrdersCount}
         />
+        <input
+          type="text"
+          placeholder="Enter R Size (e.g., 17)"
+          value={rSizeSearch}
+          onChange={(e) => setRSizeSearch(e.target.value)}
+          onBlur={fetchTiresByRSize}
+          style={{ margin: "20px", padding: "10px", width: "200px" }}
+        />
+
         {/* Management Popups */}
         {showClassicCarPopup && (
           <ClassicCarInventory onClose={handleClassicCarPopupClose} />
@@ -618,7 +650,15 @@ function App() {
 
                 <Grid container spacing={2} style={{ padding: 20 }}>
                   {tires.map((tire) => (
-                    <Grid item xs={12} sm={6} md={4} key={tire._id}>
+                    <Grid
+                      item
+                      xs={12} // Full width on extra-small devices
+                      sm={6} // Half width on small devices
+                      md={4} // One third width on medium devices
+                      lg={3} // One fourth width on large devices
+                      xl={2} // One sixth width on extra-large devices
+                      key={tire._id}
+                    >
                       <TireCard
                         tire={tire}
                         onEdit={handleEditTire}
@@ -627,7 +667,7 @@ function App() {
                         onMarkAsSold={handleMarkAsSold}
                         onMarkAsNotSold={handleMarkAsNotSold}
                         isAdmin={isAdmin}
-                        onOrder={handleOrderTire} // Pass handleOrderTire as a prop
+                        onOrder={handleOrderTire}
                       />
                     </Grid>
                   ))}

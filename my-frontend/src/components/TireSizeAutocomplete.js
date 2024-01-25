@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import AutocompleteComponent from './Autocomplete'; // Adjust the path as needed
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import AutocompleteComponent from "./Autocomplete"; // Adjust the path as needed
 
-const BACKEND_URL = 'http://localhost:4000/api/tires'; // Use your actual backend URL
-//const BACKEND_URL = 'https://hw-backend.onrender.com/api/tires'; // Use your actual backend URL
+const BACKEND_URL = "http://localhost:4000/api/tires"; // Use your actual backend URL
+// const BACKEND_URL = "https://hw-backend.onrender.com/api/tires"; // Use your actual backend URL
 
 const TireSizeAutocomplete = ({ onSizeSelect }) => {
   const [tireSizes, setTireSizes] = useState([]);
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedSize, setSelectedSize] = useState(null);
 
   useEffect(() => {
     const fetchTireSizes = async () => {
@@ -15,7 +15,7 @@ const TireSizeAutocomplete = ({ onSizeSelect }) => {
         const response = await axios.get(`${BACKEND_URL}/sizes`);
         setTireSizes(response.data);
       } catch (error) {
-        console.error('Error fetching tire sizes:', error);
+        console.error("Error fetching tire sizes:", error);
       }
     };
 
